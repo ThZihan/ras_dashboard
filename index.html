@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAS Monitoring System Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css"/>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<!-- Hero Section -->
+<div class="hero">
+  <div class="title">Recirculating Aquaculture System (RAS)</div>
+  <div class="title t2">Monitoring Dashboard</div>
+
+  <a href="#login-modal" class="btn btn-primary customBtn loginBtn">Log In</a>
+  <!-- Login Modal -->
+  <div id="login-modal" class="custom-modal loginModal">
+    <div class="modal__content">
+      <h2 class="modal__title">Login to Your Account</h2>
+      <form class="login-form" id="loginForm">
+        <div class="form-group mb-3">
+          <label for="userId" class="form-label">User ID</label>
+          <input type="text" class="form-control" id="userId" placeholder="Enter your User ID" required>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+              <i class="far fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <a href="#" class="terms-link">Forgot Password?</a>
+
+        <div class="modal__footer">
+          <button type="button" class="btn btn-secondary me-2" onclick="window.location.href='#'">Cancel</button>
+          <button type="submit" class="btn btn-primary customBtn" id="loginBtn">Submit</button>
+        </div>
+      </form>
+      <a href="#" class="modal__close" aria-label="Close">×</a>
+    </div>
+  </div>
+
+  <div class="info-box" id="current-time"></div>
+  <div class="environmental-data" id="environmental-data">
+    <strong>Environmental Data:</strong>
+    <p id="current-temp">Temperature: -- °C</p>
+    <p id="current-humidity">Humidity: -- %</p>
+  </div>
+</div>
+
+<!-- Main Content Wrapper -->
+<div class="main-content">
+  <h2>Real Time Data from Tank</h2>
+  <div class="parameter-container" id="latestData"></div>
+  <div class="info-box" id="dataInfo"></div>
+
+  <div class="download-container">
+    <div>
+      <label for="datepicker-start">Start Date:</label>
+      <input type="text" id="datepicker-start" name="start">
+    </div>
+    <div>
+      <label for="datepicker-end">End Date:</label>
+      <input type="text" id="datepicker-end" name="end">
+    </div>
+    <button class="download-button customBtn" onclick="downloadData()">Download Data</button>
+    <a href="https://api.thingspeak.com/channels/2732596/feeds.csv?api_key=5FQDTVP1SQE5WKRI&results=999999" class="download-button customBtn" download>Download Summary</a>
+  </div>
+  <div class="project-info">
+    <img src="image/fablab.png" alt="FabLab IUB Logo">
+    <div>
+      <p>Developed by FabLab IUB</p>
+      <p>A joint project by IUB & SAU</p>
+    </div>
+    <img src="image/iub.png" alt="IUB Logo">
+    <img src="image/sau.png" alt="SAU Logo">
+  </div>
+
+
+  <div class="chart-container">
+    <div id="temperatureChart"></div>
+    <div id="phChart"></div>
+    <div id="turbidityChart"></div>
+    <div id="DOChart"></div>
+    <div id="ECChart"></div>
+    <div id="ORPChart"></div>
+    <div id="TDSChart"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>© 2024 RAS Monitoring System - Jointly Developed by IUB & SAU</p>
+</div>
+<script src="main.js"></script>
+<!-- Bootstrap JS and jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
