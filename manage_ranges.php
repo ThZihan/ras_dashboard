@@ -50,6 +50,7 @@ if (isset($_SESSION['id']) && isset($_SESSION['user_name'])) {
   </div>
   <div class="download-container">
     <button class="download-button customBtn" onclick="downloadData()">Download Latest Data</button>
+    <a href="download_local_data.php" class="download-button customBtn">Download All Data</a>
   </div>
     <div class="container mt-5">
         <h1 class="mb-4">RAS Parameter Ranges Management</h1>

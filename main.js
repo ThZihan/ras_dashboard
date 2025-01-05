@@ -143,7 +143,7 @@ async function displayAllData(latest) {
 function downloadData() {
     const timezone = 'Asia/Dhaka';
     const apiKey = '5FQDTVP1SQE5WKRI';
-    const results = '9999999999';
+    const results = '5760';
     const channel= '2732596';
     const downloadLink = `https://api.thingspeak.com/channels/${channel}/feeds.csv?timezone=${timezone}&api_key=${apiKey}&results=${results}`;
     window.open(downloadLink, '_blank');
@@ -186,6 +186,17 @@ async function fetchEnvironmentalData() {
 function contactDev(){
     alert("Please Contact Developer: +8801886673292");
 }
+// Add this to your existing JavaScript code
+function fetchAndStoreData() {
+    fetch('fetch_thingspeak.php')
+        .then(response => response.text())
+        .then(data => console.log('Data storage response:', data))
+        .catch(error => console.error('Error:', error));
+}
+
+// Call immediately and then every 15 seconds
+fetchAndStoreData();
+setInterval(fetchAndStoreData, 15000);
 
 // Initialize updates
 updateTime();
