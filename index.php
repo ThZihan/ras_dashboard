@@ -22,29 +22,30 @@
   <!-- Login Modal -->
   <div id="login-modal" class="custom-modal loginModal">
     <div class="modal__content">
-      <h2 class="modal__title">Login to Your Account</h2>
-      <form class="login-form" id="loginForm">
-        <div class="form-group mb-3">
-          <label for="userId" class="form-label">User ID</label>
-          <input type="text" class="form-control" id="userId" placeholder="Enter your User ID" required>
-        </div>
+      <h2 class="modal__title">Login to <br> Admin Panel</h2>
+      <!-- Login Form -->
+  <form action="login.php" method="post" class="login-form" style="max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px;">
 
-        <div class="form-group mb-3">
-          <label for="password" class="form-label">Password</label>
-          <div class="input-group">
-            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
-              <i class="far fa-eye"></i>
-            </button>
-          </div>
-        </div>
+    <!-- Error Message -->
+    <?php if (isset($_GET['error'])) { ?>
+      <p class="alert alert-danger"><?php echo $_GET['error']; ?></p>
+    <?php } ?>
 
-        <a href="#" class="terms-link">Forgot Password?</a>
+    <div class="mb-3">
+      <label for="uname" class="form-label">User ID</label>
+      <input type="text" class="form-control" id="uname" name="uname" placeholder="Enter your User Name" required>
+    </div>
 
-        <div class="modal__footer">
-          <button type="button" class="btn btn-secondary me-2" onclick="window.location.href='#'">Cancel</button>
-          <button type="submit" class="btn btn-primary customBtn" id="loginBtn">Submit</button>
-        </div>
-      </form>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Enter your Password" required>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <a href="#" onclick="contactDev()" class="text-muted">Forgot Password?</a>
+      <button type="submit" class="btn btn-primary customBtn">Login</button>
+    </div>
+  </form>
       <a href="#" class="modal__close" aria-label="Close">×</a>
     </div>
   </div>
@@ -63,18 +64,7 @@
   <div class="parameter-container" id="latestData"></div>
   <div class="info-box" id="dataInfo"></div>
 
-  <div class="download-container">
-    <div>
-      <label for="datepicker-start">Start Date:</label>
-      <input type="text" id="datepicker-start" name="start">
-    </div>
-    <div>
-      <label for="datepicker-end">End Date:</label>
-      <input type="text" id="datepicker-end" name="end">
-    </div>
-    <button class="download-button customBtn" onclick="downloadData()">Download Data</button>
-    <a href="https://api.thingspeak.com/channels/2732596/feeds.csv?api_key=5FQDTVP1SQE5WKRI&results=999999" class="download-button customBtn" download>Download Summary</a>
-  </div>
+
   <div class="project-info">
     <img src="image/fablab.png" alt="FabLab IUB Logo">
     <div>

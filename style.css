@@ -163,19 +163,16 @@ body {
 
 .download-button {
     padding: 10px 20px;
-    background-color: #0066cc;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
+    width: 200px;
+    margin: 0 auto;
 }
 
-.download-button:hover {
-    background-color: #004999;
-}
 
 @media (max-width: 800px) {
     .hero .title{
@@ -297,7 +294,17 @@ body {
     color: #2D3391;
 }
 
-.modal__footer {
-    margin-top: 1.5rem;
-    text-align: right;
+.range-form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.success-message {
+    color: green;
+    margin: 10px 0;
+}
+.error-message {
+    color: red;
+    margin: 10px 0;
 }

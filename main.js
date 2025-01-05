@@ -1,7 +1,9 @@
-$(function() {
-    $("#datepicker-start, #datepicker-end").datepicker();
-});
+let parameterRanges = {};
 
+async function fetchRanges() {
+    const response = await fetch('get_ranges.php');
+    parameterRanges = await response.json();
+}
 async function fetchData() {
     const response = await fetch('https://api.thingspeak.com/channels/2732596/feeds.json?results=60');
     const data = await response.json();
@@ -9,59 +11,14 @@ async function fetchData() {
 }
 
 function getGradientColor(value, parameter) {
-    let idealMin, idealMax, warningMin, warningMax;
-
-    // Define ideal and warning ranges for each parameter
-    switch (parameter) {
-        case 'temperature':
-            idealMin = 26;
-            idealMax = 30;
-            warningMin = 20;
-            warningMax = 32;
-            break;
-        case 'ph':
-            idealMin = 6.50;
-            idealMax = 8.50;
-            warningMin = 6.0;
-            warningMax = 10.0;
-            break;
-        case 'turbidity':
-            idealMin = 3;
-            idealMax = 10;
-            warningMin = 2;
-            warningMax = 30;
-            break;
-        case 'do':
-            idealMin = 5.5;
-            idealMax = 7;
-            warningMin = 5;
-            warningMax = 12;
-            break;
-        case 'ec':
-            idealMin = 50;
-            idealMax = 200;
-            warningMin = 48;
-            warningMax = 250;
-            break;
-        case 'orp':
-            idealMin = 250;
-            idealMax = 400;
-            warningMin = 248;
-            warningMax = 450;
-            break;
-        case 'tds':
-            idealMin = 80;
-            idealMax = 250;
-            warningMin = 50;
-            warningMax = 300;
-            break;
-    }
-
-    // Improved condition checking
-    if (value >= idealMin && value <= idealMax) {
+    if (!parameterRanges[parameter]) return 'rgb(128, 128, 128)';  // Default gray if parameter not found
+    
+    const ranges = parameterRanges[parameter];
+    
+    if (value >= ranges.ideal_min && value <= ranges.ideal_max) {
         return 'rgb(40, 167, 69)';  // Green for ideal range
-    } else if ((value > idealMax && value <= warningMax) ||
-        (value >= warningMin && value < idealMin)) {
+    } else if ((value > ranges.ideal_max && value <= ranges.warning_max) ||
+               (value >= ranges.warning_min && value < ranges.ideal_min)) {
         return 'rgb(255, 165, 0)';  // Orange for warning range
     } else {
         return 'rgb(220, 53, 69)';  // Red for out of acceptable range
@@ -135,7 +92,7 @@ function updateCharts(data) {
         "TDS (PPM)", "TDSChart", "TDS (PPM)");
 }
 
-function displayAllData(latest) {
+async function displayAllData(latest) {
     const temperature = parseFloat(latest.field5);
     const pH = parseFloat(latest.field1);
     const turbidity = parseFloat(latest.field2);
@@ -146,92 +103,61 @@ function displayAllData(latest) {
 
     let infoText = "<h2>Comparison of Ideal Conditions for RAS Environment</h2>";
 
-    // Temperature
-    if (temperature >= 24 && temperature <= 28) {
-        infoText += `<p>✅ Temperature (${temperature} °C) is ideal for the RAS environment.</p>`;
-    } else if ((temperature > 28 && temperature <= 30) || (temperature >= 20 && temperature < 24)) {
-        infoText += `<p>⚠️ Temperature (${temperature} °C) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ Temperature (${temperature} °C) is critically outside safe range for RAS environment.</p>`;
+    function getStatusMessage(value, paramName, unit) {
+        const ranges = parameterRanges[paramName];
+        if (!ranges) return '';
+
+        const displayName = {
+            'temperature': 'Temperature',
+            'ph': 'pH level',
+            'turbidity': 'Turbidity',
+            'tds': 'TDS',
+            'do': 'Dissolved Oxygen',
+            'ec': 'Electrical Conductivity',
+            'orp': 'ORP'
+        }[paramName];
+
+        if (value >= ranges.ideal_min && value <= ranges.ideal_max) {
+            return `<p>✅ ${displayName} (${value} ${unit}) is ideal for the RAS environment.</p>`;
+        } else if ((value > ranges.ideal_max && value <= ranges.warning_max) || 
+                   (value >= ranges.warning_min && value < ranges.ideal_min)) {
+            return `<p>⚠️ ${displayName} (${value} ${unit}) needs attention - outside optimal range but still acceptable.</p>`;
+        } else {
+            return `<p>❌ ${displayName} (${value} ${unit}) is critically outside safe range for RAS environment.</p>`;
+        }
     }
 
-    // pH
-    if (pH >= 7.0 && pH <= 8.0) {
-        infoText += `<p>✅ pH level (${pH}) is ideal for the RAS environment.</p>`;
-    } else if ((pH > 8.0 && pH <= 8.5) || (pH >= 6.5 && pH < 7.0)) {
-        infoText += `<p>⚠️ pH level (${pH}) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ pH level (${pH}) is critically outside safe range for RAS environment.</p>`;
-    }
-
-    // Turbidity
-    if (turbidity >= 0 && turbidity <= 2) {
-        infoText += `<p>✅ Turbidity (${turbidity} NTU) is ideal for the RAS environment.</p>`;
-    } else if (turbidity > 2 && turbidity <= 5) {
-        infoText += `<p>⚠️ Turbidity (${turbidity} NTU) needs attention - higher than optimal but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ Turbidity (${turbidity} NTU) is too high for safe RAS operation.</p>`;
-    }
-
-    // TDS
-    if (tds >= 400 && tds <= 800) {
-        infoText += `<p>✅ TDS (${tds} PPM) is ideal for the RAS environment.</p>`;
-    } else if ((tds > 800 && tds <= 1000) || (tds >= 300 && tds < 400)) {
-        infoText += `<p>⚠️ TDS (${tds} PPM) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ TDS (${tds} PPM) is critically outside safe range for RAS environment.</p>`;
-    }
-
-    // Dissolved Oxygen
-    if (doLevel >= 6.5 && doLevel <= 8.5) {
-        infoText += `<p>✅ Dissolved Oxygen (${doLevel} mg/L) is ideal for the RAS environment.</p>`;
-    } else if ((doLevel > 8.5 && doLevel <= 10) || (doLevel >= 5 && doLevel < 6.5)) {
-        infoText += `<p>⚠️ Dissolved Oxygen (${doLevel} mg/L) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ Dissolved Oxygen (${doLevel} mg/L) is critically outside safe range for RAS environment.</p>`;
-    }
-
-    // Electrical Conductivity
-    if (ec >= 800 && ec <= 1500) {
-        infoText += `<p>✅ Electrical Conductivity (${ec} µS/cm) is ideal for the RAS environment.</p>`;
-    } else if ((ec > 1500 && ec <= 2000) || (ec >= 500 && ec < 800)) {
-        infoText += `<p>⚠️ Electrical Conductivity (${ec} µS/cm) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ Electrical Conductivity (${ec} µS/cm) is critically outside safe range for RAS environment.</p>`;
-    }
-
-    // ORP
-    if (orp >= 300 && orp <= 350) {
-        infoText += `<p>✅ ORP (${orp} mV) is ideal for the RAS environment.</p>`;
-    } else if ((orp > 350 && orp <= 400) || (orp >= 250 && orp < 300)) {
-        infoText += `<p>⚠️ ORP (${orp} mV) needs attention - outside optimal range but still acceptable.</p>`;
-    } else {
-        infoText += `<p>❌ ORP (${orp} mV) is critically outside safe range for RAS environment.</p>`;
-    }
+    // Add status messages for each parameter
+    infoText += getStatusMessage(temperature, 'temperature', '°C');
+    infoText += getStatusMessage(pH, 'ph', '');
+    infoText += getStatusMessage(turbidity, 'turbidity', 'NTU');
+    infoText += getStatusMessage(tds, 'tds', 'PPM');
+    infoText += getStatusMessage(doLevel, 'do', 'mg/L');
+    infoText += getStatusMessage(ec, 'ec', 'µS/cm');
+    infoText += getStatusMessage(orp, 'orp', 'mV');
 
     const infoBox = document.getElementById('dataInfo');
     infoBox.innerHTML = infoText;
 }
 
 function downloadData() {
-    const startDate = document.getElementById('datepicker-start').value;
-    const endDate = document.getElementById('datepicker-end').value;
-    const formattedStartDate = new Date(startDate).toISOString().split('T')[0] + ' 00:00:00';
-    const formattedEndDate = new Date(endDate).toISOString().split('T')[0] + ' 23:59:00';
     const timezone = 'Asia/Dhaka';
     const apiKey = '5FQDTVP1SQE5WKRI';
-    const downloadLink = `https://api.thingspeak.com/channels/2732596/feeds.csv?start=${formattedStartDate}&end=${formattedEndDate}&timezone=${timezone}&api_key=${apiKey}`;
+    const results = '9999999999';
+    const channel= '2732596';
+    const downloadLink = `https://api.thingspeak.com/channels/${channel}/feeds.csv?timezone=${timezone}&api_key=${apiKey}&results=${results}`;
     window.open(downloadLink, '_blank');
 }
 
-async function init() {
+// Modify your init() function to fetch ranges first:
+  async function init() {
+    await fetchRanges();  // Fetch ranges before other data
     const data = await fetchData();
     const latest = data.feeds[data.feeds.length - 1];
     displayLatestData(latest);
     updateCharts(data);
     displayAllData(latest);
 }
-
 // Refresh data every 60 seconds
 init();
 setInterval(init, 15000);
@@ -257,6 +183,9 @@ async function fetchEnvironmentalData() {
         console.error('Error fetching environmental data:', error);
     }
 }
+function contactDev(){
+    alert("Please Contact Developer: +8801886673292");
+}
 
 // Initialize updates
 updateTime();
@@ -267,3 +196,4 @@ setInterval(updateTime, 1000);
 
 // Refresh environmental data every 5 minutes
 setInterval(fetchEnvironmentalData, 300000);
+
